@@ -2,27 +2,39 @@
 <html>
 <head>
     <title>Charger Scout</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Leaflet CSS for map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+            border: 2px solid #ccc;
+        }
+    </style>
 </head>
 <body>
-    <h1>EV Chargers in Northern Ireland</h1>
-    <table>
-        <tr>
-            <th>Title</th>
-            <th>Address</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-            <th>Free to Use?</th>
-        </tr>
+    <h1>EV Chargers Across Ireland</h1>
+
+    <div id="map"></div>
+
+    <!-- Leaflet JS for the map -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // Center map roughly over Ireland with zoom level for full country view
+        var map = L.map('map').setView([53.0, -7.5], 7);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add charger markers from Flask loop
         {% for charger in chargers %}
-        <tr>
-            <td>{{ charger[1] }}</td>
-            <td>{{ charger[2] }}</td>
-            <td>{{ charger[3] }}</td>
-            <td>{{ charger[4] }}</td>
-            <td>{{ "Yes" if charger[5] else "No" }}</td>
-        </tr>
+            L.marker([{{ charger[3] }}, {{ charger[4] }}]).addTo(map)
+                .bindPopup("<b>{{ charger[1] }}</b><br> {{ 'Free - No Payment Required' if charger[5] else 'Paid - Payment Required' }}");
         {% endfor %}
-    </table>
+    </script>
 </body>
 </html>

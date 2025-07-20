@@ -2,13 +2,12 @@ import requests
 import sqlite3
 
 def fetch_chargers_osm(
-    # Following Longitude & Latitude apply to NI only
-    lat_min=54.0,  # Bottom 
-    lat_max=55.3,  # Top
-    lon_min=-8.2,  # West
-    lon_max=-5.3   # East
+    lat_min=51.3,   # Southern tip of Ireland
+    lat_max=55.5,   # Northern tip of NI
+    lon_min=-10.7,  # Western edge
+    lon_max=-5.3    # Eastern edge
 ):
-    print("Fetching data from OpenStreetMap...")
+    print("Fetching data from OpenStreetMap for Ireland...")
 
     overpass_url = "https://overpass-api.de/api/interpreter" # Overpass API endpoint URL for querying OpenStreetMap data
 
@@ -62,7 +61,7 @@ def store_chargers_osm(data):
 
     conn.commit()
     conn.close()
-    print(f"Inserted {inserted} OSM chargers into database.")
+    print(f"Inserted {inserted} chargers into database.")
 
 # This block runs when the script is executed directly (not imported as a module)
 if __name__ == "__main__":
