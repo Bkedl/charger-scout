@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charger Scout</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>EV Chargers in Northern Ireland</h1>
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Address</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Free to Use?</th>
+        </tr>
+        {% for charger in chargers %}
+        <tr>
+            <td>{{ charger[1] }}</td>
+            <td>{{ charger[2] }}</td>
+            <td>{{ charger[3] }}</td>
+            <td>{{ charger[4] }}</td>
+            <td>{{ "Yes" if charger[5] else "No" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
