@@ -2,39 +2,102 @@
 <html>
 <head>
     <title>Charger Scout</title>
-    <!-- Leaflet CSS for map -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         #map {
-            height: 600px;
-            width: 100%;
+            height: 500px;
+            margin-bottom: 20px;
             border: 2px solid #ccc;
+        }
+
+        #filter {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>EV Chargers Across Ireland</h1>
+    <h1>EV Chargers in Ireland</h1>
 
+
+    
+    <form method="POST">
+    <label for="ev_model">Select your EV model:</label>
+    <select name="ev_model" id="ev_model">
+        {% for model in ev_models %}
+            <option value="{{ model }}" {% if model == selected_model %}selected{% endif %}>{{ model }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="unit">Select unit:</label>
+    <select name="unit" id="unit">
+        <option value="km" {% if selected_unit == "km" %}selected{% endif %}>Kilometers</option>
+        <option value="miles" {% if selected_unit == "miles" %}selected{% endif %}>Miles</option>
+    </select>
+
+    <button type="submit">Check Range</button>
+</form>
+
+{% if selected_model and selected_range %}
+    <p><strong>{{ selected_model }}</strong> has an average range of <strong>{{ selected_range }}</strong> {{ selected_unit }} per full charge.</p>
+{% endif %}
+
+
+
+<!-- 🔽 Dropdown Filter -->
+    <label for="filter"><strong>Show only:</strong></label>
+    <select id="filter">
+        <option value="all">All Chargers</option>
+        <option value="free">Free - No Payment Required</option>
+        <option value="paid">Paid - Payment Required</option>
+    </select>
+
+
+
+
+
+    <!-- Map -->
     <div id="map"></div>
 
-    <!-- Leaflet JS for the map -->
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
-        // Center map roughly over Ireland with zoom level for full country view
-        var map = L.map('map').setView([53.0, -7.5], 7);
+        // 1. Map setup
+        var map = L.map('map').setView([53.5, -7.5], 7); // Ireland-wide view
 
-        // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // Add charger markers from Flask loop
+        // 2. Marker storage
+        var allMarkers = [];
+
+        // 3. Loop through chargers from Flask
         {% for charger in chargers %}
-            L.marker([{{ charger[3] }}, {{ charger[4] }}]).addTo(map)
-                .bindPopup("<b>{{ charger[1] }}</b><br> {{ 'Free - No Payment Required' if charger[5] else 'Paid - Payment Required' }}");
+            var marker = L.marker([{{ charger[3] }}, {{ charger[4] }}]);
+            marker.bindPopup("<b>{{ charger[1] }}</b><br>{{ 'Free to use' if charger[5] else 'You must pay for use' }}");
+            marker.costType = "{{ 'free' if charger[5] else 'paid' }}"; // Add a property for filtering
+            marker.addTo(map);
+            allMarkers.push(marker);
         {% endfor %}
+
+        // 4. Filter logic
+        document.getElementById("filter").addEventListener("change", function () {
+            var selected = this.value;
+
+            allMarkers.forEach(function(marker) {
+                if (selected === "all" || marker.costType === selected) {
+                    map.addLayer(marker);
+                } else {
+                    map.removeLayer(marker);
+                }
+            });
+        });
     </script>
 </body>
 </html>
